@@ -1,134 +1,347 @@
--- Database Creation and Use
-CREATE DATABASE MavenMovies;
-USE MavenMovies;
+use mavenmovies;
+/* ============================== SECTION 1: TABLE CREATION AND CONSTRAINTS ============================== */
 
--- 1. Create employees table with constraints
+-- Question 1: Create employees table with constraints
 CREATE TABLE employees (
     emp_id INT NOT NULL PRIMARY KEY,
     emp_name TEXT NOT NULL,
     age INT CHECK (age >= 18),
     email TEXT UNIQUE,
-    salary DECIMAL DEFAULT 30000
+    salary DECIMAL(10, 2) DEFAULT 30000
 );
 
--- 2. Purpose of constraints
--- Constraints ensure data integrity and enforce business rules. 
--- Examples: PRIMARY KEY (ensures uniqueness), NOT NULL (prevents missing values), 
--- UNIQUE (prevents duplicates), CHECK (restricts values), FOREIGN KEY (maintains relationships).
+-- Question 2: Purpose of Constraints
+/*
+Constraints ensure data integrity by enforcing rules on the data stored in a table.
+Examples:
+1. NOT NULL: Ensures a column cannot have NULL values.
+2. PRIMARY KEY: Uniquely identifies each record in a table.
+3. FOREIGN KEY: Ensures referential integrity between tables.
+4. CHECK: Validates that values meet a condition.
+5. UNIQUE: Ensures all values in a column are distinct.
+*/
 
--- 3. NOT NULL and Primary Key
--- NOT NULL prevents missing values. PRIMARY KEY ensures uniqueness and cannot contain NULL.
+-- Question 3: Why use NOT NULL? Can a primary key contain NULL?
+/*
+NOT NULL ensures a column always has a value, preventing incomplete data.
+A primary key cannot contain NULL values because it must uniquely identify each record.
+*/
 
--- 4. Adding & Removing Constraints
-ALTER TABLE employees ADD CONSTRAINT chk_salary CHECK (salary > 25000);
+-- Question 4: Adding or Removing Constraints
+-- Example: Add a CHECK constraint to ensure salary > 20000
+ALTER TABLE employees ADD CONSTRAINT chk_salary CHECK (salary > 20000);
+
+-- Example: Remove the CHECK constraint
 ALTER TABLE employees DROP CONSTRAINT chk_salary;
 
--- 5. Consequences of Violating Constraints
--- Example: INSERT INTO employees (emp_id, emp_name, age) VALUES (1, 'John', 17); -- ERROR: CHECK constraint failed.
+-- Question 5: Consequences of Violating Constraints
+/*
+Attempting to violate constraints results in an error.
+Example Error Message:
+ERROR: new row for relation "employees" violates check constraint "chk_age"
+DETAIL: Failing row contains (1, 'John Doe', 17, 'john@example.com', 30000.00).
+*/
 
--- 6. Modify Products Table
+-- Question 6: Modify products table to add constraints
 ALTER TABLE products ADD PRIMARY KEY (product_id);
 ALTER TABLE products ALTER COLUMN price SET DEFAULT 50.00;
 
--- 7. INNER JOIN Students & Classes
-SELECT student_name, class_name FROM students INNER JOIN classes ON students.class_id = classes.class_id;
 
--- 8. Orders, Customers, Products Query
-SELECT orders.order_id, customers.customer_name, COALESCE(products.product_name, 'No Product')
-FROM orders LEFT JOIN products ON orders.product_id = products.product_id 
-INNER JOIN customers ON orders.customer_id = customers.customer_id;
+/* ============================== SECTION 2: JOINS ============================== */
 
--- 9. Total Sales Per Product
-SELECT products.product_name, SUM(orders.amount) AS total_sales FROM orders
-INNER JOIN products ON orders.product_id = products.product_id
-GROUP BY products.product_name;
+-- Question 7: Fetch student_name and class_name using INNER JOIN
+-- Assuming tables: students(student_id, student_name, class_id) and classes(class_id, class_name)
+SELECT s.student_name, c.class_name
+FROM students s
+INNER JOIN classes c ON s.class_id = c.class_id;
 
--- 10. Orders & Customer Quantity Query
-SELECT orders.order_id, customers.customer_name, SUM(order_details.quantity) AS total_quantity 
-FROM orders INNER JOIN customers ON orders.customer_id = customers.customer_id 
-INNER JOIN order_details ON orders.order_id = order_details.order_id 
-GROUP BY orders.order_id, customers.customer_name;
+-- Question 8: List all order_id, customer_name, and product_name (LEFT JOIN)
+-- Assuming tables: orders(order_id, customer_id), customers(customer_id, customer_name), products(product_id, product_name)
+SELECT o.order_id, c.customer_name, p.product_name
+FROM products p
+LEFT JOIN orders o ON p.product_id = o.product_id
+LEFT JOIN customers c ON o.customer_id = c.customer_id;
 
--- SQL Commands for Maven Movies DB
-SELECT * FROM actors;
-SELECT * FROM customers;
-SELECT DISTINCT country FROM addresses;
-SELECT * FROM customers WHERE active = 1;
-SELECT rental_id FROM rentals WHERE customer_id = 1;
-SELECT * FROM films WHERE rental_duration > 5;
-SELECT COUNT(*) FROM films WHERE replacement_cost BETWEEN 15 AND 20;
-SELECT COUNT(DISTINCT first_name) FROM actors;
-SELECT * FROM customers LIMIT 10;
-SELECT * FROM customers WHERE first_name LIKE 'b%' LIMIT 3;
-SELECT title FROM films WHERE rating = 'G' LIMIT 5;
-SELECT * FROM customers WHERE first_name LIKE 'a%';
-SELECT * FROM customers WHERE first_name LIKE '%a';
-SELECT * FROM cities WHERE city LIKE 'a%a' LIMIT 4;
-SELECT * FROM customers WHERE first_name LIKE '%NI%';
-SELECT * FROM customers WHERE first_name LIKE '_r%';
-SELECT * FROM customers WHERE first_name LIKE 'a%' AND LENGTH(first_name) >= 5;
-SELECT * FROM customers WHERE first_name LIKE 'a%' AND first_name LIKE '%o';
-SELECT * FROM films WHERE rating IN ('PG', 'PG-13');
-SELECT * FROM films WHERE length BETWEEN 50 AND 100;
-SELECT * FROM actors LIMIT 50;
+-- Question 9: Total sales amount for each product
+-- Assuming tables: order_details(order_id, product_id, quantity, price), products(product_id, product_name)
+SELECT p.product_name, SUM(od.quantity * od.price) AS total_sales
+FROM products p
+INNER JOIN order_details od ON p.product_id = od.product_id
+GROUP BY p.product_name;
+
+-- Question 10: Display order_id, customer_name, and quantity of products ordered
+-- Assuming tables: orders(order_id, customer_id), customers(customer_id, customer_name), order_details(order_id, product_id, quantity)
+SELECT o.order_id, c.customer_name, SUM(od.quantity) AS total_quantity
+FROM orders o
+INNER JOIN customers c ON o.customer_id = c.customer_id
+INNER JOIN order_details od ON o.order_id = od.order_id
+GROUP BY o.order_id, c.customer_name;
+
+
+/* ============================== SECTION 3: SQL COMMANDS ============================== */
+
+-- Question 1: Identify primary keys and foreign keys in Maven Movies DB
+/*
+Primary Keys:
+- actor.actor_id
+- film.film_id
+- customer.customer_id
+
+Foreign Keys:
+- film_actor.actor_id references actor.actor_id
+- film_actor.film_id references film.film_id
+- rental.customer_id references customer.customer_id
+*/
+
+-- Question 2: List all details of actors
+SELECT * FROM actor;
+
+-- Question 3: List all customer information
+SELECT * FROM customer;
+
+-- Question 4: List different countries
+SELECT DISTINCT country FROM country;
+
+-- Question 5: Display all active customers
+SELECT * FROM customer WHERE active = 1;
+
+-- Question 6: List of all rental IDs for customer with ID 1
+SELECT rental_id FROM rental WHERE customer_id = 1;
+
+-- Question 7: Films with rental duration > 5
+SELECT title FROM film WHERE rental_duration > 5;
+
+-- Question 8: Count of films with replacement cost between $15 and $20
+SELECT COUNT(*) AS film_count
+FROM film
+WHERE replacement_cost > 15 AND replacement_cost < 20;
+
+-- Question 9: Count of unique first names of actors
+SELECT COUNT(DISTINCT first_name) AS unique_first_names FROM actor;
+
+-- Question 10: First 10 records from customer table
+SELECT * FROM customer LIMIT 10;
+
+-- Question 11: First 3 records where first name starts with 'b'
+SELECT * FROM customer WHERE first_name LIKE 'B%' LIMIT 3;
+
+-- Question 12: First 5 movies rated as 'G'
+SELECT title FROM film WHERE rating = 'G' LIMIT 5;
+
+-- Question 13: Customers whose first name starts with "a"
+SELECT * FROM customer WHERE first_name LIKE 'A%';
+
+-- Question 14: Customers whose first name ends with "a"
+SELECT * FROM customer WHERE first_name LIKE '%A';
+
+-- Question 15: First 4 cities starting and ending with 'a'
+SELECT city FROM city WHERE city LIKE 'A%A' LIMIT 4;
+
+-- Question 16: Customers with "NI" in any position
+SELECT * FROM customer WHERE first_name LIKE '%NI%';
+
+-- Question 17: Customers with "r" in the second position
+SELECT * FROM customer WHERE first_name LIKE '_R%';
+
+-- Question 18: Customers whose first name starts with "a" and is at least 5 characters long
+SELECT * FROM customer WHERE first_name LIKE 'A____%';
+
+-- Question 19: Customers whose first name starts with "a" and ends with "o"
+SELECT * FROM customer WHERE first_name LIKE 'A%O';
+
+-- Question 20: Films with PG and PG-13 ratings
+SELECT * FROM film WHERE rating IN ('PG', 'PG-13');
+
+-- Question 21: Films with length between 50 and 100
+SELECT * FROM film WHERE length BETWEEN 50 AND 100;
+
+-- Question 22: Top 50 actors
+SELECT * FROM actor LIMIT 50;
+
+-- Question 23: Distinct film IDs from inventory table
 SELECT DISTINCT film_id FROM inventory;
 
--- Aggregate Functions
-SELECT COUNT(*) FROM rentals;
-SELECT AVG(rental_duration) FROM films;
-SELECT UPPER(first_name), UPPER(last_name) FROM customers;
-SELECT rental_id, MONTH(rental_date) FROM rentals;
 
--- GROUP BY Queries
-SELECT customer_id, COUNT(*) FROM rentals GROUP BY customer_id;
-SELECT store_id, SUM(amount) FROM payments GROUP BY store_id;
-SELECT category_name, COUNT(*) FROM film_category
-INNER JOIN films ON film_category.film_id = films.film_id
-INNER JOIN rentals ON films.film_id = rentals.inventory_id GROUP BY category_name;
-SELECT language_id, AVG(rental_rate) FROM films GROUP BY language_id;
+/* ============================== SECTION 4: FUNCTIONS ============================== */
 
--- Joins Queries
-SELECT title, first_name, last_name FROM films 
-JOIN inventory ON films.film_id = inventory.film_id
-JOIN rentals ON inventory.inventory_id = rentals.inventory_id
-JOIN customers ON rentals.customer_id = customers.customer_id;
+-- Question 1: Total number of rentals
+SELECT COUNT(*) AS total_rentals FROM rental;
 
-SELECT first_name, last_name FROM actors
-JOIN film_actor ON actors.actor_id = film_actor.actor_id
-JOIN films ON film_actor.film_id = films.film_id
-WHERE films.title = 'Gone with the Wind';
+-- Question 2: Average rental duration
+SELECT AVG(rental_duration) AS avg_rental_duration FROM film;
 
-SELECT customers.first_name, customers.last_name, SUM(payments.amount) FROM customers
-JOIN payments ON customers.customer_id = payments.customer_id
-GROUP BY customers.first_name, customers.last_name;
+-- Question 3: Customer names in uppercase
+SELECT UPPER(first_name) AS first_name, UPPER(last_name) AS last_name FROM customer;
 
-SELECT title FROM films 
-JOIN inventory ON films.film_id = inventory.film_id
-JOIN rentals ON inventory.inventory_id = rentals.inventory_id
-JOIN customers ON rentals.customer_id = customers.customer_id
-JOIN addresses ON customers.address_id = addresses.address_id
-JOIN cities ON addresses.city_id = cities.city_id
-WHERE cities.city = 'London'
-GROUP BY title;
+-- Question 4: Extract month from rental date
+SELECT rental_id, MONTH(rental_date) AS rental_month FROM rental;
 
--- Advanced Joins
-SELECT title, COUNT(*) FROM films 
-JOIN inventory ON films.film_id = inventory.film_id
-JOIN rentals ON inventory.inventory_id = rentals.inventory_id
-GROUP BY title ORDER BY COUNT(*) DESC LIMIT 5;
+-- Question 5: Count of rentals per customer
+SELECT customer_id, COUNT(*) AS rental_count
+FROM rental
+GROUP BY customer_id;
 
--- Windows Functions
-SELECT customer_id, RANK() OVER(ORDER BY SUM(amount) DESC) FROM payments GROUP BY customer_id;
-SELECT film_id, SUM(amount) OVER(PARTITION BY film_id ORDER BY rental_date) FROM rentals;
-SELECT film_id, AVG(rental_duration) OVER(PARTITION BY length) FROM films;
-SELECT category_name, title, RANK() OVER(PARTITION BY category_name ORDER BY COUNT(*) DESC) FROM films
-JOIN film_category ON films.film_id = film_category.film_id GROUP BY category_name, title;
+-- Question 6: Total revenue per store
+SELECT s.store_id, SUM(p.amount) AS total_revenue
+FROM store s
+JOIN staff st ON s.store_id = st.store_id
+JOIN payment p ON st.staff_id = p.staff_id
+GROUP BY s.store_id;
 
--- Recursive CTE for Employee Reporting
+-- Question 7: Rentals per category
+SELECT c.name AS category, COUNT(*) AS rental_count
+FROM film_category fc
+JOIN category c ON fc.category_id = c.category_id
+JOIN inventory i ON fc.film_id = i.film_id
+JOIN rental r ON i.inventory_id = r.inventory_id
+GROUP BY c.name;
+
+-- Question 8: Average rental rate per language
+SELECT l.name AS language, AVG(f.rental_rate) AS avg_rental_rate
+FROM film f
+JOIN language l ON f.language_id = l.language_id
+GROUP BY l.name;
+
+
+/* ============================== SECTION 5: NORMALIZATION & CTE ============================== */
+
+-- Question 1: Normalize a table to 1NF
+/*
+Example: A table storing multiple phone numbers in a single column violates 1NF.
+Solution: Split the phone numbers into separate rows.
+*/
+
+-- Question 2: Normalize a table to 2NF
+/*
+Example: A table with composite primary key (film_id, actor_id) and non-key attributes violates 2NF.
+Solution: Split into separate tables for film and actor relationships.
+*/
+
+-- Question 3: Normalize a table to 3NF
+/*
+Example: A table with transitive dependency (e.g., customer -> city -> country) violates 3NF.
+Solution: Create separate tables for city and country.
+*/
+
+-- Question 4: Normalize a table from unnormalized form to 2NF
+/*
+Example: Start with a table storing customer, order, and product details.
+Step 1: Split into customer, order, and product tables.
+Step 2: Ensure each table has a primary key and no partial dependencies.
+*/
+
+-- Question 5: CTE for actor names and film count
+WITH ActorFilmCount AS (
+    SELECT a.actor_id, a.first_name, a.last_name, COUNT(fa.film_id) AS film_count
+    FROM actor a
+    LEFT JOIN film_actor fa ON a.actor_id = fa.actor_id
+    GROUP BY a.actor_id, a.first_name, a.last_name
+)
+SELECT * FROM ActorFilmCount;
+
+-- Question 6: CTE for film title, language, and rental rate
+WITH FilmLanguageDetails AS (
+    SELECT f.title, l.name AS language, f.rental_rate
+    FROM film f
+    JOIN language l ON f.language_id = l.language_id
+)
+SELECT * FROM FilmLanguageDetails;
+
+-- Question 7: CTE for total revenue per customer
+WITH CustomerRevenue AS (
+    SELECT c.customer_id, SUM(p.amount) AS total_revenue
+    FROM customer c
+    JOIN payment p ON c.customer_id = p.customer_id
+    GROUP BY c.customer_id
+)
+SELECT * FROM CustomerRevenue;
+
+-- Question 8: Recursive CTE for employees reporting to a manager
 WITH RECURSIVE EmployeeHierarchy AS (
-    SELECT staff_id, first_name, last_name, reports_to FROM staff WHERE reports_to IS NULL
+    SELECT staff_id, first_name, last_name, reports_to
+    FROM staff
+    WHERE reports_to IS NULL
     UNION ALL
-    SELECT s.staff_id, s.first_name, s.last_name, s.reports_to FROM staff s
-    JOIN EmployeeHierarchy eh ON s.reports_to = eh.staff_id
+    SELECT s.staff_id, s.first_name, s.last_name, s.reports_to
+    FROM staff s
+    INNER JOIN EmployeeHierarchy eh ON s.reports_to = eh.staff_id
 )
 SELECT * FROM EmployeeHierarchy;
+
+/* ============================== Normalization & CTE Section ============================== */
+
+-- 9a. Create a CTE to list customers who have made more than two rentals, and then join this CTE with the customer table to retrieve additional customer details.
+WITH CustomersWithMoreThanTwoRentals AS (
+    SELECT 
+        customer_id,
+        COUNT(rental_id) AS rental_count
+    FROM rental
+    GROUP BY customer_id
+    HAVING COUNT(rental_id) > 2
+)
+SELECT 
+    c.customer_id,
+    c.first_name,
+    c.last_name,
+    ctr.rental_count
+FROM customer c
+JOIN CustomersWithMoreThanTwoRentals ctr ON c.customer_id = ctr.customer_id;
+
+-- 10a. Write a query using a CTE to find the total number of rentals made each month, considering the rental_date from the rental table.
+WITH MonthlyRentalCounts AS (
+    SELECT 
+        DATE_FORMAT(rental_date, '%Y-%m') AS rental_month,
+        COUNT(rental_id) AS total_rentals
+    FROM rental
+    GROUP BY DATE_FORMAT(rental_date, '%Y-%m')
+)
+SELECT 
+    rental_month,
+    total_rentals
+FROM MonthlyRentalCounts
+ORDER BY rental_month;
+
+-- 11a. Create a CTE to generate a report showing pairs of actors who have appeared in the same film together, using the film_actor table.
+WITH ActorPairs AS (
+    SELECT 
+        fa1.actor_id AS actor1_id,
+        fa2.actor_id AS actor2_id,
+        f.title AS film_title
+    FROM film_actor fa1
+    JOIN film_actor fa2 ON fa1.film_id = fa2.film_id AND fa1.actor_id < fa2.actor_id
+    JOIN film f ON fa1.film_id = f.film_id
+)
+SELECT 
+    a1.first_name AS actor1_first_name,
+    a1.last_name AS actor1_last_name,
+    a2.first_name AS actor2_first_name,
+    a2.last_name AS actor2_last_name,
+    ap.film_title
+FROM ActorPairs ap
+JOIN actor a1 ON ap.actor1_id = a1.actor_id
+JOIN actor a2 ON ap.actor2_id = a2.actor_id;
+
+-- 12a. Implement a recursive CTE to find all employees in the staff table who report to a specific manager, considering the reports_to column.
+WITH RECURSIVE EmployeeHierarchy AS (
+    SELECT 
+        staff_id,
+        first_name,
+        last_name,
+        reports_to
+    FROM staff
+    WHERE staff_id = 1 -- Replace '1' with the desired manager's staff_id
+    UNION ALL
+    SELECT 
+        s.staff_id,
+        s.first_name,
+        s.last_name,
+        s.reports_to
+    FROM staff s
+    INNER JOIN EmployeeHierarchy eh ON s.reports_to = eh.staff_id
+)
+SELECT 
+    staff_id,
+    first_name,
+    last_name,
+    reports_to
+FROM EmployeeHierarchy;
