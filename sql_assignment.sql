@@ -498,9 +498,9 @@ WITH RECURSIVE EmployeeHierarchy AS (
 )
 SELECT * FROM EmployeeHierarchy;
 
-/* ============================== Normalization & CTE Section ============================== */
 
--- 9a. Create a CTE to list customers who have made more than two rentals, and then join this CTE with the customer table to retrieve additional customer details.
+
+-- Question 9: Create a CTE to list customers who have made more than two rentals, and then join this CTE with the customer table to retrieve additional customer details.
 WITH CustomersWithMoreThanTwoRentals AS (
     SELECT 
         customer_id,
@@ -517,7 +517,7 @@ SELECT
 FROM customer c
 JOIN CustomersWithMoreThanTwoRentals ctr ON c.customer_id = ctr.customer_id;
 
--- 10a. Write a query using a CTE to find the total number of rentals made each month, considering the rental_date from the rental table.
+-- Question 10: Write a query using a CTE to find the total number of rentals made each month, considering the rental_date from the rental table.
 WITH MonthlyRentalCounts AS (
     SELECT 
         DATE_FORMAT(rental_date, '%Y-%m') AS rental_month,
@@ -531,7 +531,7 @@ SELECT
 FROM MonthlyRentalCounts
 ORDER BY rental_month;
 
--- 11a. Create a CTE to generate a report showing pairs of actors who have appeared in the same film together, using the film_actor table.
+-- Question 11: Create a CTE to generate a report showing pairs of actors who have appeared in the same film together, using the film_actor table.
 WITH ActorPairs AS (
     SELECT 
         fa1.actor_id AS actor1_id,
@@ -551,7 +551,7 @@ FROM ActorPairs ap
 JOIN actor a1 ON ap.actor1_id = a1.actor_id
 JOIN actor a2 ON ap.actor2_id = a2.actor_id;
 
--- 12a. Implement a recursive CTE to find all employees in the staff table who report to a specific manager, considering the reports_to column.
+-- Question 12: Implement a recursive CTE to find all employees in the staff table who report to a specific manager, considering the reports_to column.
 WITH RECURSIVE EmployeeHierarchy AS (
     SELECT 
         staff_id,
