@@ -46,9 +46,6 @@ DETAIL: Failing row contains (1, 'John Doe', 17, 'john@example.com', 30000.00).
 ALTER TABLE products ADD PRIMARY KEY (product_id);
 ALTER TABLE products ALTER COLUMN price SET DEFAULT 50.00;
 
-
-/* ============================== SECTION 2: JOINS ============================== */
-
 -- Question 7: Fetch student_name and class_name using INNER JOIN
 -- Assuming tables: students(student_id, student_name, class_id) and classes(class_id, class_name)
 SELECT s.student_name, c.class_name
@@ -202,8 +199,44 @@ FROM film f
 JOIN language l ON f.language_id = l.language_id
 GROUP BY l.name;
 
+/* ============================== SECTION 5: JOINS ============================== */
 
-/* ============================== SECTION 5: NORMALIZATION & CTE ============================== */
+-- Question 9: Display the title of the movie, customer's first name, and last name who rented it
+-- Assuming tables: film(film_id, title), inventory(film_id, inventory_id), rental(rental_id, inventory_id, customer_id), customer(customer_id, first_name, last_name)
+SELECT f.title AS movie_title, c.first_name, c.last_name
+FROM film f
+JOIN inventory i ON f.film_id = i.film_id
+JOIN rental r ON i.inventory_id = r.inventory_id
+JOIN customer c ON r.customer_id = c.customer_id;
+
+-- Question 10: Retrieve the names of all actors who have appeared in the film "Gone with the Wind"
+-- Assuming tables: film(film_id, title), film_actor(actor_id, film_id), actor(actor_id, first_name, last_name)
+SELECT a.first_name, a.last_name
+FROM actor a
+JOIN film_actor fa ON a.actor_id = fa.actor_id
+JOIN film f ON fa.film_id = f.film_id
+WHERE f.title = 'Gone with the Wind';
+
+-- Question 11: Retrieve the customer names along with the total amount they've spent on rentals
+-- Assuming tables: customer(customer_id, first_name, last_name), payment(customer_id, amount)
+SELECT c.first_name, c.last_name, SUM(p.amount) AS total_spent
+FROM customer c
+JOIN payment p ON c.customer_id = p.customer_id
+GROUP BY c.customer_id, c.first_name, c.last_name;
+
+-- Question 12: List the titles of movies rented by each customer in a particular city (e.g., 'London')
+-- Assuming tables: customer(customer_id, first_name, last_name, address_id), address(address_id, city_id), city(city_id, city), rental(rental_id, customer_id, inventory_id), inventory(inventory_id, film_id), film(film_id, title)
+SELECT c.first_name, c.last_name, f.title AS movie_title
+FROM customer c
+JOIN address a ON c.address_id = a.address_id
+JOIN city ct ON a.city_id = ct.city_id
+JOIN rental r ON c.customer_id = r.customer_id
+JOIN inventory i ON r.inventory_id = i.inventory_id
+JOIN film f ON i.film_id = f.film_id
+WHERE ct.city = 'London';
+
+
+/* ============================== SECTION 6: NORMALIZATION & CTE ============================== */
 
 -- Question 1: Normalize a table to 1NF
 /*
