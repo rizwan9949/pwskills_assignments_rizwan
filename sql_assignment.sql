@@ -75,7 +75,7 @@ INNER JOIN order_details od ON o.order_id = od.order_id
 GROUP BY o.order_id, c.customer_name;
 
 
-/* ============================== SECTION 3: SQL COMMANDS ============================== */
+/* ============================== SECTION 2: SQL COMMANDS ============================== */
 
 -- Question 1: Identify primary keys and foreign keys in Maven Movies DB
 /*
@@ -159,7 +159,7 @@ SELECT * FROM actor LIMIT 50;
 SELECT DISTINCT film_id FROM inventory;
 
 
-/* ============================== SECTION 4: FUNCTIONS ============================== */
+/* ============================== SECTION 3: FUNCTIONS ============================== */
 
 -- Question 1: Total number of rentals
 SELECT COUNT(*) AS total_rentals FROM rental;
@@ -199,7 +199,7 @@ FROM film f
 JOIN language l ON f.language_id = l.language_id
 GROUP BY l.name;
 
-/* ============================== SECTION 5: JOINS ============================== */
+/* ============================== SECTION 4: JOINS ============================== */
 
 -- Question 9: Display the title of the movie, customer's first name, and last name who rented it
 -- Assuming tables: film(film_id, title), inventory(film_id, inventory_id), rental(rental_id, inventory_id, customer_id), customer(customer_id, first_name, last_name)
@@ -236,7 +236,7 @@ JOIN film f ON i.film_id = f.film_id
 WHERE ct.city = 'London';
 
 
-/* ============================== SECTION 6: NORMALIZATION & CTE ============================== */
+/* ============================== SECTION 5: NORMALIZATION & CTE ============================== */
 
 -- Question 1: Normalize a table to 1NF
 /*
